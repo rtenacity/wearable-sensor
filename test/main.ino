@@ -1,5 +1,9 @@
 #include <Wire.h>
 #include <Protocentral_FDC1004.h>
+#include <SPI.h>              // Wireless comms between sensor(s) and Arduino Nano IoT
+#include <WiFiNINA.h>         // Used to connect Nano IoT to network
+#include <ArduinoJson.h>      // Used for HTTP Request
+#include "arduino_secrets.h"  // Used to store private network info
 
 #define UPPER_BOUND  0X4000                 // max readout capacitance
 #define LOWER_BOUND  (-1 * UPPER_BOUND)
@@ -20,7 +24,12 @@ void setup()
 void loop()
 {
 
-  FDC.configureMeasurementSingle(MEASURMENT, CHANNEL, capdac);
+  int capacitance = measure();
+
+}
+
+int32_t measure() {
+    FDC.configureMeasurementSingle(MEASURMENT, CHANNEL, capdac);
   FDC.triggerSingleMeasurement(MEASURMENT, FDC1004_100HZ);
 
   //wait for completion
@@ -36,6 +45,8 @@ void loop()
     Serial.print((((float)capacitance/1000)),4);
     Serial.print("  pf, ");
 
+    return capacitance;
+
     if (msb > UPPER_BOUND)               // adjust capdac accordingly
 	{
       if (capdac < FDC1004_CAPDAC_MAX)
@@ -48,4 +59,6 @@ void loop()
     }
 
   }
+
+  return -1000000;
 }
