@@ -36,7 +36,7 @@ IPAddress server(172,20,10,5);
 
 // Timing variables for HTTP posting
 unsigned long lastConnectionTime = 0;
-const unsigned long postingInterval = 10L * 50L; // around 1 second between requests
+const unsigned long postingInterval = 10L * 20L; // around 1 second between requests
 
 // --- Capacitance Sensor Globals ---
 // Define constants for the FDC1004 sensor reading
@@ -111,7 +111,7 @@ void httpRequest() {
   if (client.connect(server, 5000)) {
     Serial.println("connecting...");
     // Prepare the HTTP GET request; note that the parameter is now "capacitance"
-    String request = "GET /test?capacitance=" + String(capacitanceValue) + " HTTP/1.1";
+    String request = "GET /test?capacitance=" + String(capacitanceValue, 4) + " HTTP/1.1";
     client.println(request);
     
     // Set the Host header (update the IP as needed using commas in server() above and periods here)
@@ -147,7 +147,7 @@ void readCapacitance(){
   FDC.triggerSingleMeasurement(MEASURMENT, FDC1004_100HZ);
 
   // Wait for the measurement to complete
-  delay(15);
+  delay(10);
   
   uint16_t value[2];
   if (!FDC.readMeasurement(MEASURMENT, value)) {
@@ -169,5 +169,4 @@ void readCapacitance(){
         capdac--;
     }
   }
-  delay(50);
 }

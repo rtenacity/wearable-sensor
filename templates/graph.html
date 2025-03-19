@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Arduino Live Graph</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="liveChart" width="800" height="400"></canvas>
+
+    <script>
+        const ctx = document.getElementById('liveChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Capacitance Value (Smoothed)',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    tension: 0.2,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+
+        const socket = io();
+        let lastSmoothedValue = null;
+        const alpha = 0.05; // Smoothing factor (adjust between 0 and 1)
+
+        function applyEWMA(newValue) {
+            if (lastSmoothedValue === null) {
+                lastSmoothedValue = newValue; // Initialize with first value
+            } else {
+                lastSmoothedValue = alpha * newValue + (1 - alpha) * lastSmoothedValue;
+            }
+            return lastSmoothedValue;
+        }
+
+        socket.on('new_data', (msg) => {
+            const rawValue = parseFloat(msg.value);
+            const smoothedValue = applyEWMA(rawValue);
+
+            chart.data.labels.push(msg.time);
+            chart.data.datasets[0].data.push(smoothedValue);
+            chart.update();
+
+            // Limit data points to 50 for performance
+            if (chart.data.labels.length > 50) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+        });
+    </script>
+</body>
+</html>
