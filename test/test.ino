@@ -42,7 +42,7 @@ const unsigned long postingInterval = 10L * 20L; // around 1 second between requ
 // Define constants for the FDC1004 sensor reading
 #define UPPER_BOUND  0x4000                 // max readout threshold
 #define LOWER_BOUND  (-1 * UPPER_BOUND)
-#define CHANNEL 0                          // channel to be read
+#define CHANNEL 3                          // channel to be read
 #define MEASURMENT 0                       // measurement channel index
 
 int capdac = 0;                           // adjustment factor for the sensor

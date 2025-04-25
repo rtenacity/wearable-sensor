@@ -18,6 +18,7 @@ def test():
         value = keys.get('capacitance')
 
         if value:
+            print("value")
             timestamp = datetime.now().strftime('%H:%M:%S')
             socketio.emit('new_data', {'time': timestamp, 'value': value})
             print(f"Sent {value} at {timestamp}", flush=True)

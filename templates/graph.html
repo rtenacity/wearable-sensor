@@ -42,7 +42,7 @@
             } else {
                 lastSmoothedValue = alpha * newValue + (1 - alpha) * lastSmoothedValue;
             }
-            return lastSmoothedValue;
+            return newValue;
         }
 
         socket.on('new_data', (msg) => {
