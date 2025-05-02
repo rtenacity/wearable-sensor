@@ -2,14 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Arduino Live Graph</title>
+    <title>Arduino Live Graph & Blink Rate</title>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body { margin: 0; padding: 0; }
+      #blinkRate {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255,255,255,0.8);
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-family: sans-serif;
+        font-size: 1.2em;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      }
+    </style>
 </head>
 <body>
     <canvas id="liveChart" width="800" height="400"></canvas>
+    <div id="blinkRate">Blink Rate: -- bpm</div>
 
     <script>
+        // setup Chart.js line chart
         const ctx = document.getElementById('liveChart').getContext('2d');
         const chart = new Chart(ctx, {
             type: 'line',
@@ -25,39 +41,47 @@
             options: {
                 responsive: true,
                 scales: {
-                    y: {
-                        beginAtZero: false
-                    }
+                    y: { beginAtZero: false }
                 }
             }
         });
 
-        const socket = io();
+        // EWMA smoothing
+        const alpha = 0.05;
         let lastSmoothedValue = null;
-        const alpha = 0.05; // Smoothing factor (adjust between 0 and 1)
-
         function applyEWMA(newValue) {
             if (lastSmoothedValue === null) {
-                lastSmoothedValue = newValue; // Initialize with first value
+                lastSmoothedValue = newValue;
             } else {
                 lastSmoothedValue = alpha * newValue + (1 - alpha) * lastSmoothedValue;
             }
             return newValue;
         }
 
+        // connect Socket.IO
+        const socket = io();
+
+        // handle incoming raw data
         socket.on('new_data', (msg) => {
-            const rawValue = parseFloat(msg.value);
-            const smoothedValue = applyEWMA(rawValue);
+            const raw = parseFloat(msg.value);
+            const smooth = applyEWMA(raw);
 
             chart.data.labels.push(msg.time);
-            chart.data.datasets[0].data.push(smoothedValue);
+            chart.data.datasets[0].data.push(smooth);
             chart.update();
 
-            // Limit data points to 50 for performance
+            // keep only last 50 points
             if (chart.data.labels.length > 50) {
                 chart.data.labels.shift();
                 chart.data.datasets[0].data.shift();
             }
+        });
+
+        // handle blink‐rate updates
+        socket.on('blink_rate', (msg) => {
+            document.getElementById('blinkRate').innerText =
+                `Blink Rate: ${msg.rate} bpm`;
+            console.log(`Updated blink rate: ${msg.rate} bpm`);
         });
     </script>
 </body>
