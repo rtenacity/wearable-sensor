@@ -13,7 +13,7 @@ Notes:
 
 // Library Inclusions
 #include <SPI.h>              // For wireless communications
-#include <WiFiNINA.h>         // Used to connect Nano IoT to network
+#include <WiFiNINA.h>         // Used to connect Nano IoT to network  
 #include <ArduinoJson.h>      // Used for HTTP Request (if needed for JSON processing)
 #include "arduino_secrets.h"  // Contains your sensitive WiFi credentials
 

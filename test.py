@@ -19,9 +19,13 @@ def test():
 
         if value:
             print("value")
-            timestamp = datetime.now().strftime('%H:%M:%S')
+            timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]  # Up to milliseconds
             socketio.emit('new_data', {'time': timestamp, 'value': value})
             print(f"Sent {value} at {timestamp}", flush=True)
+            
+            with open('data_log.csv', 'a') as f:
+                f.write(f"{timestamp},{value}\n")
+
 
         return jsonify({"message": "Success"}), 200
 
